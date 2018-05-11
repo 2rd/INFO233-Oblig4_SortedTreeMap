@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="org.functionaljava:functionaljava:4.7" type="repository">
+    <properties maven-id="org.functionaljava:functionaljava:4.7" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/functionaljava/functionaljava/4.7/functionaljava-4.7.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -300,11 +300,11 @@ public class SortedTreeMapTest {
      * If more than 1 entry has been added, then max and min are not the same entry.
      */
     public Property max_min_are_different_after_addn() {
-       return property(isKVList, kvs -> {
-           SortedTreeMap<Integer, String> tm = new SortedTreeMap<>(intOrd.toComparator());
-           kvs.foreachDoEffect(kv -> tm.add(kv._1(), kv._2()));
-           return implies(tm.size() > 1, () -> prop(!tm.min().equals(tm.max())));
-       });
+        return property(isKVList, kvs -> {
+            SortedTreeMap<Integer, String> tm = new SortedTreeMap<>(intOrd.toComparator());
+            kvs.foreachDoEffect(kv -> tm.add(kv._1(), kv._2()));
+            return implies(tm.size() > 1, () -> prop(!tm.min().equals(tm.max())));
+        });
 
     }
 
@@ -313,17 +313,17 @@ public class SortedTreeMapTest {
      */
     public Property replace_missing_key() {
         return property(isKVList, arbInteger, arbString, (kvs, key, val) -> {
-           SortedTreeMap<Integer, String> tm = new SortedTreeMap<>(intOrd.toComparator());
-           kvs.foreachDoEffect(kv -> tm.add(kv._1(), kv._2()));
+            SortedTreeMap<Integer, String> tm = new SortedTreeMap<>(intOrd.toComparator());
+            kvs.foreachDoEffect(kv -> tm.add(kv._1(), kv._2()));
 
-           return implies(!kvs.exists(kv -> kv._1().equals(key)), () -> {
-               try {
-                   tm.replace(key, val);
-               } catch (NoSuchElementException e) {
-                   return prop(true);
-               }
-               return prop(false);
-           });
+            return implies(!kvs.exists(kv -> kv._1().equals(key)), () -> {
+                try {
+                    tm.replace(key, val);
+                } catch (NoSuchElementException e) {
+                    return prop(true);
+                }
+                return prop(false);
+            });
         });
     }
 

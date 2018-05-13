@@ -1,4 +1,5 @@
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -8,9 +9,6 @@ public class SortedTreeMap<K extends Comparable<? super K>, V> implements ISorte
     private Entry<K,V> root;
     private int size;
     private Comparator<K> comp;
-
-    private static final boolean BLACK = true;
-    private static final boolean RED = false;
 
     public SortedTreeMap(Comparator<K> kComparator){
         root = null;
@@ -25,7 +23,26 @@ public class SortedTreeMap<K extends Comparable<? super K>, V> implements ISorte
      */
     @Override
     public Entry<K, V> min() {
-        return null;
+        if(root == null){
+            return null;
+        }
+        Entry<K,V> min = root;
+        while (min.getLeft() != null){
+            min = min.getLeft();
+        }
+        return min;
+    }
+
+    public Entry<K,V> min(Entry<K,V> rootNode){
+        if(rootNode == null){
+            return null;
+        }
+        Entry<K,V> min = rootNode;
+        while (rootNode.getLeft() != null){
+            min = rootNode.getLeft();
+            rootNode = rootNode.getLeft();
+        }
+        return min;
     }
 
     /**
@@ -35,7 +52,14 @@ public class SortedTreeMap<K extends Comparable<? super K>, V> implements ISorte
      */
     @Override
     public Entry<K, V> max() {
-        return null;
+        if(root == null){
+            return null;
+        }
+        Entry<K,V> max = root;
+        while (max.getRight() != null){
+            max = max.getRight();
+        }
+        return max;
     }
 
     /**
@@ -49,17 +73,13 @@ public class SortedTreeMap<K extends Comparable<? super K>, V> implements ISorte
     @Override
     public V add(K key, V value) {
         V result = null;
-        Entry newEntry = new Entry(key, value);
+        Entry<K,V> newEntry = new Entry(key, value);
         if(getRoot() == null){
-            newEntry.color = BLACK;
             setRoot(newEntry);
             size++;
             return null;
         }
-        //newEntry.color = RED;
-        result = (V) addEntry(newEntry, getRoot()).value;
-        root.color = BLACK;
-
+        result = addEntry(newEntry, getRoot());
 
         return result;
     }
@@ -75,174 +95,42 @@ public class SortedTreeMap<K extends Comparable<? super K>, V> implements ISorte
     public V add(Entry<K, V> entry) {
         V result = null;
         if(getRoot() == null){
-            entry.color = BLACK;
+
             setRoot(entry);
             size++;
             return null;
         }
         System.out.println("---entry:"+entry.getValue() + "     root:"+getRoot().getValue());
-        setRoot (addEntry(entry, getRoot()));
-        root.color = BLACK;
+        result = addEntry(entry, getRoot());
+
         return result;
     }
-    /*
-    public Entry<K,V> addEntry(Entry<K,V> newEntry, Entry<K,V> rootNode){
-        if(rootNode == null){
-            rootNode = newEntry;
-            reColor(rootNode);
-            size++;
-            return rootNode;
-        }
-        int comparison = compare((K) newEntry.key, (K) rootNode.key);
+
+    public V addEntry(Entry<K,V> newEntry, Entry<K,V> rootNode){
+        V result = null;
+
+        int comparison = compare(newEntry.key, rootNode.key);
 
         if(comparison == 0){
-            newEntry.parent = rootNode.parent;
+            result = rootNode.getValue();
             rootNode = newEntry;
         } else if(comparison < 0){
-            newEntry.parent = rootNode;
-            rootNode.setLeft(addEntry(newEntry, rootNode.getLeft()));
-        } else if(comparison > 0){
-            newEntry.parent = rootNode;
-            rootNode.setRight(addEntry(newEntry, rootNode.getRight()));
-        }
-
-
-        return rootNode;
-    }
-
-    public void reColor(Entry<K,V> newNode){
-        if(isRED(newNode) && isRED(newNode.parent) && newNode.equals(newNode.parent.getLeft())){
-            if(newNode.parent.parent != null && isRED(newNode.parent.parent.getRight())){
-                pushColor(newNode.parent.parent);
+            if (rootNode.getLeft() != null) {
+                 result = addEntry(newEntry, rootNode.getLeft());
+            } else {
+                rootNode.setLeft(newEntry);
+                size++;
             }
-        }
-        if(isRED(newNode) && isRED(newNode.parent) && newNode.equals(newNode.parent.getRight())){
-            if(newNode.parent.parent != null && isRED(newNode.parent.parent.getLeft())){
-                pushColor(newNode.parent.parent);
+        } else if(comparison > 0){
+            if(rootNode.getRight() != null) {
+                result = addEntry(newEntry, rootNode.getRight());
+            } else{
+                rootNode.setRight(newEntry);
+                size++;
             }
         }
 
-    }
-    public void pushColor(Entry<K,V> rootNode){
-        if (rootNode.getLeft() != null){
-            rootNode.getLeft().color = !rootNode.color;
-        }
-        if (rootNode.getRight() != null){
-            rootNode.getRight().color = !rootNode.color;
-        }
-        rootNode.color = !rootNode.color;
-    }
-    */
-    public void pushColor(Entry<K,V> parent){
-        if (parent.getLeft() != null){
-            parent.getLeft().color = parent.color;
-        }
-        if (parent.getRight() != null){
-            parent.getRight().color = parent.color;
-        }
-        parent.color = !parent.color;
-        System.out.println("pusha");
-    }
-    public Entry<K,V> addEntry(Entry newEntry, Entry rootNode){
-        if (rootNode == null){
-            size++;
-            return new Entry<K,V> ((K) newEntry.key, (V) newEntry.getValue());
-        }
-        Entry result = null;
-        int comparison = compare((K) newEntry.key, (K) rootNode.key);
-        System.out.println("comparison:  " + comparison);
-        if(comparison == 0){
-            result = newEntry;
-            newEntry.parent = rootNode.parent;
-            rootNode = newEntry;
-        } else if(comparison < 0){
-            newEntry.parent = rootNode;
-            rootNode.setLeft(addEntry(newEntry, rootNode.getLeft()));
-        } else if(comparison > 0){
-            newEntry.parent = rootNode;
-            rootNode.setRight(addEntry(newEntry, rootNode.getRight()));
-        }
-
-        System.out.println("currRoot: " + rootNode.getValue());
-        if(isRED(rootNode.getRight()) && isRED(rootNode.getRight().getRight())){
-            reBalanceLeft(rootNode);
-        }
-        if (isRED(rootNode.getRight()) && !isRED(rootNode.getLeft())){
-            rootNode = reBalanceLeft(rootNode);
-        }
-        if (isRED(rootNode.getLeft()) && isRED(rootNode.getLeft().getLeft())){
-            rootNode = reBalanceRight(rootNode);
-        }
-        if (isRED(rootNode.getLeft()) && isRED(rootNode.getRight())){
-            flipColors(rootNode);
-        }
-        System.out.println("currRoot: " + rootNode.getValue());
-
-        System.out.print("Result == null:  ");
-        System.out.print(result == null);
-        System.out.println();
-        return rootNode;
-    }
-
-
-    public Entry<K,V> reBalance (Entry<K,V> rootNode){
-        assert rootNode != null;
-        if(isRED(rootNode.getRight())){
-            rootNode = reBalanceLeft(rootNode);
-        }
-        if(isRED(rootNode.getLeft()) && isRED(rootNode.getLeft().getLeft())){
-            rootNode = reBalanceRight(rootNode);
-        }
-        if(isRED(rootNode.getLeft()) && isRED(rootNode.getRight())){
-           flipColors(rootNode);
-
-        }
-        return rootNode;
-    }
-
-    public Entry<K, V> reBalanceLeft (Entry<K,V> rootNode){
-
-        System.out.println("-----------Rebalanserer til venstre--------");
-        assert rootNode != null && isRED(rootNode.getRight());
-        Entry<K, V> result = rootNode.getRight();
-        System.out.println("Setter " + rootNode.key + " sitt right child til å være " + result.getLeft() + " ("+result.key+" sin tidl. left child.");
-        rootNode.setRight(result.getLeft());
-        System.out.println("Setter " + rootNode.key + " til å være " + result.key + " sitt left child..");
-        result.setLeft(rootNode);
-        System.out.println("Setter fargen til resultatet(" + result.key + ")  lik " + result.getLeft().key + " sin tidl farge (" + rootNode.color+")");
-        result.color = result.getLeft().color;
-        System.out.println("setter fargen til " + result.getLeft().key + " til RED");
-        result.getLeft().color = RED;
-        System.out.println("---------rebalanced left-----------");
         return result;
-    }
-
-    public Entry<K, V> reBalanceRight (Entry<K,V> rootNode){
-        System.out.println("-----------Rebalanserer til høyre--------");
-        assert rootNode != null && isRED(rootNode.getLeft());
-        Entry<K, V> result = rootNode.getLeft();
-        System.out.println("Setter " + rootNode.key + " sitt left child til å være " + result.getRight() + " ("+result.key+" sin tidl. right child.");
-
-        rootNode.setLeft(result.getRight());
-        System.out.println("Setter " + rootNode.key + " til å være " + result.key + " sitt right child..");
-        result.setRight(rootNode);
-        System.out.println("Setter fargen til resultatet(" + result.key + ")  lik " + result.getRight().key + " sin tidl farge (" + rootNode.color+")");
-        result.color = result.getRight().color;
-        System.out.println("setter fargen til " + result.getRight().key + " til RED");
-        result.getRight().color = RED;
-        System.out.println("------------rebalanced right----------");
-
-        return result;
-    }
-
-    public void flipColors(Entry<K,V> rootNode){
-        assert (rootNode != null) && (rootNode.getLeft() != null) && (rootNode.getRight() != null);
-        assert (!isRED(rootNode) && isRED(rootNode.getLeft()) && isRED(rootNode.getRight()) || (isRED(rootNode) && !isRED(rootNode.getLeft()) && !isRED(rootNode.getRight())));
-        System.out.println("colors flipped");
-        rootNode.color = !rootNode.color;
-        rootNode.getRight().color = !rootNode.getRight().color;
-        rootNode.getLeft().color = !rootNode.getLeft().color;
-
     }
 
     /**
@@ -281,8 +169,45 @@ public class SortedTreeMap<K extends Comparable<? super K>, V> implements ISorte
      */
     @Override
     public V remove(Object key) throws NoSuchElementException {
-        return null;
+        V result = getValue(key);
+        root = removeEntry((K) key, root, root);
+        size--;
+        return result;
     }
+
+    public Entry<K,V> removeEntry(K key, Entry<K,V> toRemove, Entry<K,V> rootNode){
+
+        if(toRemove == null) {
+            return null;
+        }
+
+        int comparison = compare(key, toRemove.key);
+        if(comparison < 0){
+            rootNode = toRemove;
+            rootNode.setLeft(removeEntry(key, toRemove.getLeft(), rootNode));
+
+        }
+        else if(comparison > 0){
+            rootNode = toRemove;
+            rootNode.setRight(removeEntry(key, toRemove.getRight(), rootNode));
+
+        }
+        else {
+            if(toRemove.getLeft() == null){
+                return toRemove.getRight();
+            }
+            else if(toRemove.getRight() == null){
+                return toRemove.getLeft();
+            }
+
+            toRemove.key = min(toRemove.getRight()).key;
+            toRemove.value = min(toRemove.getRight()).getValue();
+            toRemove.setRight(removeEntry(toRemove.key, toRemove.getRight(), toRemove.getRight()));
+        }
+
+        return toRemove;
+    }
+
 
     /**
      * Retrieves the value for the key in the map.
@@ -293,9 +218,32 @@ public class SortedTreeMap<K extends Comparable<? super K>, V> implements ISorte
      */
     @Override
     public V getValue(Object key) throws NoSuchElementException {
-        return null;
+        Entry<K,V> resultNode = getEntry((K) key, root);
+        if (resultNode == null){
+            throw new NoSuchElementException("No Entry with key '" + key + "' exists in the map.");
+        }
+        return resultNode.getValue();
     }
 
+    public Entry<K,V> getEntry(K key, Entry<K,V> rootNode){
+        Entry<K,V> result = null;
+        if(rootNode == null){
+            return null;
+        }
+        int comparison = compare(key, rootNode.key);
+
+        if(comparison < 0){
+            result = getEntry(key, rootNode.getLeft());
+        }
+        else if(comparison > 0){
+            result = getEntry(key, rootNode.getRight());
+        }
+        else {
+            result = rootNode;
+        }
+
+        return result;
+    }
     /**
      * Checks if a key is in the map.
      *
@@ -318,6 +266,7 @@ public class SortedTreeMap<K extends Comparable<? super K>, V> implements ISorte
         return false;
     }
 
+
     /**
      * Finds all the keys in the map and returns them in order.
      *
@@ -325,7 +274,21 @@ public class SortedTreeMap<K extends Comparable<? super K>, V> implements ISorte
      */
     @Override
     public Iterable<K> keys() {
-        return null;
+        if(root == null){
+            return null;
+        }
+        LinkedList<K> result = new LinkedList<>();
+        result = toList(root, result);
+        return result;
+    }
+
+    public LinkedList<K> toList(Entry<K,V> currRoot, LinkedList<K> list){
+        if(currRoot != null){
+            toList(currRoot.getLeft(), list);
+            list.add(currRoot.key);
+            toList(currRoot.getRight(), list);
+        }
+        return list;
     }
 
     /**
@@ -435,12 +398,5 @@ public class SortedTreeMap<K extends Comparable<? super K>, V> implements ISorte
 
     public void setRoot(Entry<K, V> root) {
         this.root = root;
-    }
-
-    public boolean isRED(Entry<K, V> node) {
-        if(node == null){
-            return false;
-        }
-        return node.color == RED;
     }
 }

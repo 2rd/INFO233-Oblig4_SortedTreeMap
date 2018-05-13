@@ -1,14 +1,12 @@
 public class Entry<K, V> {
-    public final K key;
-    public final V value;
-    public boolean color;
+    public K key;
+    public V value;
     public Entry<K,V> left;
-    public Entry<K,V> parent;
+    public Entry<K,V> right;
 
     public Entry(K key, V value) {
         this.key = key;
         this.value = value;
-        this.color = false;
     }
 
     public V getValue(){
@@ -22,7 +20,9 @@ public class Entry<K, V> {
     }
 
     public void setLeft(Entry<K, V> left) {
-        this.left = left;
+        if (left == null){
+            this.left = null;
+        } else this.left = left;
     }
 
     public Entry<K, V> getRight() {
@@ -30,13 +30,10 @@ public class Entry<K, V> {
     }
 
     public void setRight(Entry<K, V> right) {
-        this.right = right;
+        if (right == null){
+            this.right = null;
+        } else this.right = right;
     }
-
-    public Entry<K,V> right;
-
-
-
 
     @Override
     public boolean equals(Object o) {
